@@ -14,8 +14,7 @@
   (testing "scenario four"
     (is (= -6 (tweak-frequency [-1 -2 -3]))))
   (testing "puzzle test"
-            (is (= 556 (tweak-frequency puzzle-input)))))
-
+    (is (= 556 (tweak-frequency puzzle-input)))))
 
 (deftest second-problem
   (testing "scenario one"

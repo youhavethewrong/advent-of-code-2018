@@ -15,9 +15,8 @@
   (map-indexed
    (fn [i item]
      (if (not= item (.charAt b i))
-       [i item (.charAt b i )]
-       nil
-       ))
+       [i item (.charAt b i)]
+       nil))
    a))
 
 ;; this is pretty inefficient - generates all 1 character differences twice
