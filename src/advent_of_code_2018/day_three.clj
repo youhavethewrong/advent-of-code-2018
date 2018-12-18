@@ -29,12 +29,7 @@
 
 (defn build-fabric
   [x y]
-  (into []
-        (reduce
-         (fn [facc _]
-           (conj facc (vec (repeat x []))))
-         []
-         (range y))))
+  (vec (reduce (fn [facc _] (conj facc (vec (repeat x [])))) [] (range y))))
 
 (defn build-claim-coordinates
   [x y w t]
@@ -44,7 +39,7 @@
      (fn [y]
        (map
         (fn [x]
-          (conj [] x y))
+          (vector x y))
         xs))
      ys)))
 
@@ -70,7 +65,7 @@
 (defn only-overlapping
   [claimed-fabric]
   (filter
-   #(not-empty %)
+   not-empty
    (mapcat
     (fn [row]
       (filter

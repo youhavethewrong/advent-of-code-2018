@@ -14,9 +14,7 @@
   [a b]
   (map-indexed
    (fn [i item]
-     (if (not= item (.charAt b i))
-       [i item (.charAt b i)]
-       nil))
+     (when (not= item (.charAt b i)) [i item (.charAt b i)]))
    a))
 
 ;; this is pretty inefficient - generates all 1 character differences twice
@@ -27,16 +25,16 @@
      (map
       (fn [cid]
         (let [d (string-diff id  cid)
-              nn (filter #(not (nil? %)) d)
+              nn (remove nil? d)
               x (count nn)]
           (when (= 1 x)
-            [id cid (first (first nn))])))
+            [id cid (ffirst nn)])))
       ids))
    ids))
 
 (defn take-good-matches
   [ids]
-  (filter #(not (nil? %)) (flatten (generate-matches ids))))
+  (remove nil? (flatten (generate-matches ids))))
 
 (defn common-letters
   [[a b index]]
