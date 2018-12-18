@@ -1,5 +1,6 @@
 (ns advent-of-code-2018.day-three
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as str]
+            [clojure.pprint :as p]))
 
 (def test1 ["#1 @ 1,3: 4x4" "#2 @ 3,1: 4x4" "#3 @ 5,5: 2x2"])
 
@@ -15,8 +16,6 @@
        (map #(java.lang.Integer/parseInt %) (rest g))))
    claims))
 
-(seqify-claims test1)
-
 (defn required-size
   [sclaims]
   (reduce
@@ -27,18 +26,65 @@
    {:x 0 :y 0}
    sclaims))
 
+
+(defn build-fabric
+  [x y]
+  (reduce
+   (fn [facc _]
+     (conj facc (repeat x [])))
+   []
+   (range y)))
+
+(defn build-claim-coordinates
+  [x y w t]
+  (let [xs (range x (+ x w))
+        ys (range y (+ y t))]
+    (mapcat
+     (fn [y]
+       (map
+        (fn [x]
+          (conj [] x y))
+        xs))
+     ys)))
+
+;; my god how horrible
 (defn overlapping-square-inches
   [claims]
   (let [sclaims (seqify-claims claims)
         size (required-size sclaims)
-        fabric (repeat (* (inc (:x size)) (inc (:y size))) [])]
+        xsize (inc (:x size))
+        ysize (inc (:y size))
+        fabric (build-fabric xsize ysize)]
     (reduce
-     (fn [bacc c]
-
-       )
+     (fn [facc [id x y w t]]
+       (let [coords (build-claim-coordinates x y w t)]
+         (reduce
+          (fn [cacc [cx cy]]
+            (map-indexed
+             (fn [i row]
+               (if (= i cy)
+                 (map-indexed
+                  (fn [j cell]
+                    (if (= j cx)
+                      (conj cell id)
+                      cell))
+                  row)
+                 row))
+             cacc))
+          facc
+          coords)))
      fabric
-     sclaims)
-    )
-  )
+     sclaims)))
 
-(overlapping-square-inches test1)
+(defn count-overlapping
+  [claimed-fabric]
+  (count
+   (filter
+    #(not-empty %)
+    (mapcat
+     (fn [row]
+       (filter
+        (fn [cell]
+          (> (count cell) 1))
+        row))
+     claimed-fabric))))
