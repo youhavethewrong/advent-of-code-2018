@@ -29,11 +29,12 @@
 
 (defn build-fabric
   [x y]
-  (reduce
-   (fn [facc _]
-     (conj facc (repeat x [])))
-   []
-   (range y)))
+  (into []
+        (reduce
+         (fn [facc _]
+           (conj facc (vec (repeat x []))))
+         []
+         (range y))))
 
 (defn build-claim-coordinates
   [x y w t]
@@ -48,7 +49,7 @@
      ys)))
 
 ;; my god how horrible
-(defn overlapping-square-inches
+(defn generate-overlapping-claims
   [claims]
   (let [sclaims (seqify-claims claims)
         size (required-size sclaims)
@@ -60,31 +61,33 @@
        (let [coords (build-claim-coordinates x y w t)]
          (reduce
           (fn [cacc [cx cy]]
-            (map-indexed
-             (fn [i row]
-               (if (= i cy)
-                 (map-indexed
-                  (fn [j cell]
-                    (if (= j cx)
-                      (conj cell id)
-                      cell))
-                  row)
-                 row))
-             cacc))
+            (update-in cacc [cy cx] conj id))
           facc
           coords)))
      fabric
      sclaims)))
 
+(defn only-overlapping
+  [claimed-fabric]
+  (filter
+   #(not-empty %)
+   (mapcat
+    (fn [row]
+      (filter
+       (fn [cell]
+         (> (count cell) 1))
+       row))
+    claimed-fabric)))
+
 (defn count-overlapping
   [claimed-fabric]
-  (count
-   (filter
-    #(not-empty %)
-    (mapcat
-     (fn [row]
-       (filter
-        (fn [cell]
-          (> (count cell) 1))
-        row))
-     claimed-fabric))))
+  (count (only-overlapping claimed-fabric)))
+
+(defn get-non-overlapping
+  [claimed-fabric claims]
+  (let [sclaims (seqify-claims claims)
+        overlapping-ids (reduce conj #{} (flatten (only-overlapping claimed-fabric)))]
+    (filter
+     (fn [id]
+       (not (contains? overlapping-ids id)))
+     (map first sclaims))))
